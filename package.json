@@ -5,6 +5,7 @@
     "license": "MIT",
     "author": "Ian Lucas",
     "repository": "ianlucas/remix-auth-steam",
+    "type": "module",
     "main": "./dist/index.js",
     "keywords": [
         "auth",
