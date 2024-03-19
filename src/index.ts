@@ -6,7 +6,7 @@
 import { redirect, SessionStorage } from "@remix-run/server-runtime";
 import { AuthenticateOptions, Strategy, StrategyVerifyCallback } from "remix-auth";
 import OpenID from "openid";
-import { PromiseAuthenticate, PromiseVerifyAssertion } from "./promises";
+import { PromiseAuthenticate, PromiseVerifyAssertion } from "./promises.js";
 import SteamAPI, { UserSummary } from "steamapi";
 
 export interface SteamStrategyOptions {
