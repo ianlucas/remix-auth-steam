@@ -4,9 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { redirect, SessionStorage } from "@remix-run/server-runtime";
-import { AuthenticateOptions, Strategy, StrategyVerifyCallback } from "remix-auth";
 import OpenID from "openid";
-import { PromiseAuthenticate, PromiseVerifyAssertion } from "./promises.js";
+import { AuthenticateOptions, Strategy, StrategyVerifyCallback } from "remix-auth";
 import SteamAPI, { UserSummary } from "steamapi";
 
 export interface SteamStrategyOptions {
@@ -16,6 +15,40 @@ export interface SteamStrategyOptions {
 }
 
 export type SteamStrategyVerifyParams = UserSummary;
+
+function authenticateToSteam(relyingParty: OpenID.RelyingParty): Promise<string> {
+    return new Promise((resolve, reject) => {
+        relyingParty.authenticate("https://steamcommunity.com/openid", false, (err, url) => {
+            if (err) {
+                return reject(err);
+            }
+            if (!url) {
+                return reject("Got no URL from authenticate method");
+            }
+            return resolve(url);
+        });
+    });
+}
+
+function verifySteamAssertion(
+    relyingParty: OpenID.RelyingParty,
+    request: Request
+): Promise<{
+    authenticated: boolean;
+    claimedIdentifier?: string | undefined;
+}> {
+    return new Promise((resolve, reject) => {
+        relyingParty.verifyAssertion(request, (err, result) => {
+            if (err) {
+                return reject(err);
+            }
+            if (!result) {
+                return reject("No result from verifyAssertion");
+            }
+            return resolve(result);
+        });
+    });
+}
 
 export class SteamStrategy<User> extends Strategy<User, SteamStrategyVerifyParams> {
     name = "steam";
@@ -34,7 +67,7 @@ export class SteamStrategy<User> extends Strategy<User, SteamStrategyVerifyParam
         const relyingParty = new OpenID.RelyingParty(returnURL, realm ?? null, true, false, []);
         const steamApi = new SteamAPI(apiKey);
         try {
-            const result = await PromiseVerifyAssertion(relyingParty, request);
+            const result = await verifySteamAssertion(relyingParty, request);
             if (!result.authenticated || !result.claimedIdentifier)
                 return this.failure(`Not authenticated from result`, request, sessionStorage, options);
             try {
@@ -47,8 +80,7 @@ export class SteamStrategy<User> extends Strategy<User, SteamStrategyVerifyParam
                 return this.failure(message, request, sessionStorage, options);
             }
         } catch {
-            const result = await PromiseAuthenticate(relyingParty);
-            throw redirect(result);
+            throw redirect(await authenticateToSteam(relyingParty));
         }
     }
 }
