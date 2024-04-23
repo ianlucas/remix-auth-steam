@@ -52,7 +52,7 @@ function verifySteamAssertion(
 
 export class SteamStrategy<User> extends Strategy<User, SteamStrategyVerifyParams> {
     name = "steam";
-    private options: SteamStrategyOptions | (() => Promise<SteamStrategyOptions>);
+    private options: SteamStrategyOptions | ((request: Request) => Promise<SteamStrategyOptions>);
 
     constructor(
         options: SteamStrategyOptions | (() => Promise<SteamStrategyOptions>),
@@ -63,7 +63,8 @@ export class SteamStrategy<User> extends Strategy<User, SteamStrategyVerifyParam
     }
 
     async authenticate(request: Request, sessionStorage: SessionStorage, options: AuthenticateOptions): Promise<User> {
-        const { apiKey, returnURL, realm } = typeof this.options === "function" ? await this.options() : this.options;
+        const { apiKey, returnURL, realm } =
+            typeof this.options === "function" ? await this.options(request) : this.options;
         const relyingParty = new OpenID.RelyingParty(returnURL, realm ?? null, true, false, []);
         const steamApi = new SteamAPI(apiKey);
         try {
