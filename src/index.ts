@@ -52,14 +52,12 @@ function verifySteamAssertion(
 
 export class SteamStrategy<User> extends Strategy<User, SteamStrategyVerifyParams> {
     name = "steam";
-    private options: SteamStrategyOptions | ((request: Request) => Promise<SteamStrategyOptions>);
 
     constructor(
-        options: SteamStrategyOptions | (() => Promise<SteamStrategyOptions>),
+        private options: SteamStrategyOptions | ((request: Request) => Promise<SteamStrategyOptions>),
         verify: StrategyVerifyCallback<User, SteamStrategyVerifyParams>
     ) {
         super(verify);
-        this.options = options;
     }
 
     async authenticate(request: Request, sessionStorage: SessionStorage, options: AuthenticateOptions): Promise<User> {
