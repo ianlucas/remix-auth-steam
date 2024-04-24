@@ -14,7 +14,10 @@ export interface SteamStrategyOptions {
     apiKey: string;
 }
 
-export type SteamStrategyVerifyParams = UserSummary;
+export type SteamStrategyVerifyParams = {
+    request: Request;
+    user: UserSummary;
+};
 
 function authenticateToSteam(relyingParty: OpenID.RelyingParty): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -72,7 +75,7 @@ export class SteamStrategy<User> extends Strategy<User, SteamStrategyVerifyParam
             try {
                 const userSteamID = result.claimedIdentifier.toString().split("/").at(-1)!;
                 const steamUserSummary = (await steamApi.getUserSummary(userSteamID)) as UserSummary;
-                const user = await this.verify(steamUserSummary);
+                const user = await this.verify({ user: steamUserSummary, request });
                 return this.success(user, request, sessionStorage, options);
             } catch (error) {
                 let message = (error as Error).message;
