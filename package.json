@@ -1,6 +1,5 @@
 {
     "name": "@ianlucas/remix-auth-steam",
-    "version": "4.0.0",
     "description": "Remix authentication strategy for Steam",
     "license": "MIT",
     "author": "Ian Lucas",
