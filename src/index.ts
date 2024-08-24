@@ -72,30 +72,36 @@ export class SteamStrategy<User> extends Strategy<User, SteamStrategyVerifyParam
                 onError?.(error);
             }
         };
-        const relyingParty = new OpenID.RelyingParty(returnURL, realm ?? null, true, false, []);
-        const steamApi = new SteamAPI(apiKey);
         try {
-            const result = await verifySteamAssertion(relyingParty, request);
-            if (!result.authenticated || !result.claimedIdentifier)
-                return this.failure(`Not authenticated from result`, request, sessionStorage, options);
-            try {
-                const userSteamID = result.claimedIdentifier.toString().split("/").at(-1)!;
-                const steamUserSummary = (await steamApi.getUserSummary(userSteamID)) as UserSummary;
-                const user = await this.verify({ user: steamUserSummary, request });
-                return this.success(user, request, sessionStorage, options);
-            } catch (error) {
-                notifyError(error);
-                let message = (error as Error).message;
-                return this.failure(message, request, sessionStorage, options);
+            const relyingParty = new OpenID.RelyingParty(returnURL, realm ?? null, true, false, []);
+            const steamApi = new SteamAPI(apiKey);
+            const url = new URL(request.url);
+            const callbackUrl = new URL(returnURL);
+            if (url.pathname === callbackUrl.pathname) {
+                const result = await verifySteamAssertion(relyingParty, request);
+                if (!result.authenticated || !result.claimedIdentifier)
+                    return this.failure(`Not authenticated from result`, request, sessionStorage, options);
+                try {
+                    const userSteamID = result.claimedIdentifier.toString().split("/").at(-1)!;
+                    const steamUserSummary = (await steamApi.getUserSummary(userSteamID)) as UserSummary;
+                    const user = await this.verify({ user: steamUserSummary, request });
+                    return this.success(user, request, sessionStorage, options);
+                } catch (error) {
+                    notifyError(error);
+                    let message = (error as Error).message;
+                    return this.failure(message, request, sessionStorage, options);
+                }
+            } else {
+                try {
+                    throw redirect(await authenticateToSteam(relyingParty));
+                } catch (error) {
+                    notifyError(error);
+                    throw error;
+                }
             }
         } catch (error) {
             notifyError(error);
-            try {
-                throw redirect(await authenticateToSteam(relyingParty));
-            } catch (error) {
-                notifyError(error);
-                throw error;
-            }
+            throw error;
         }
     }
 }
