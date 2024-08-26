@@ -16,6 +16,7 @@
         "strategy"
     ],
     "scripts": {
+        "docs": "typedoc --out docs src/index.ts",
         "prepack": "([ -d dist ] && rm -rf dist); tsc",
         "typecheck": "tsc --project tsconfig.json --noEmit",
         "format": "prettier . --write",
@@ -36,6 +37,7 @@
         "@types/openid": "^2.0.5",
         "prettier": "^3.3.3",
         "react": "^18.3.1",
+        "typedoc": "^0.26.6",
         "typescript": "^5.5.4"
     },
     "dependencies": {
