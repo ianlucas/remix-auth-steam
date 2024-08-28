@@ -1,11 +1,8 @@
-.env
-.env.example
 .git
 .github
 .gitignore
 .prettierignore
 .prettierrc
-generate-log.txt
 README.md
 src
 tsconfig.json
