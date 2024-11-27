@@ -1,13 +1,7 @@
 {
+    "extends": "@total-typescript/tsconfig/tsc/dom/library",
+    "include": ["src/index.ts"],
     "compilerOptions": {
-        "declaration": true,
-        "esModuleInterop": true,
-        "lib": ["DOM", "ESNext"],
-        "module": "ESNext",
-        "moduleResolution": "node",
-        "outDir": "dist",
-        "strict": true,
-        "target": "ESNext"
-    },
-    "include": ["src/index.ts"]
+        "outDir": "dist"
+    }
 }
