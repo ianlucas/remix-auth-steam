@@ -80,9 +80,12 @@ export class SteamStrategy<User> extends Strategy<User, SteamStrategyVerifyParam
             if (url.pathname === callbackUrl.pathname) {
                 const result = await verifySteamAssertion(relyingParty, request);
                 if (!result.authenticated || !result.claimedIdentifier)
-                    return this.failure(`Not authenticated from result`, request, sessionStorage, options);
+                    return this.failure("Not authenticated from result", request, sessionStorage, options);
                 try {
-                    const userSteamID = result.claimedIdentifier.toString().split("/").at(-1)!;
+                    const userSteamID = result.claimedIdentifier.toString().split("/").at(-1);
+                    if (userSteamID === undefined) {
+                        throw new Error("Unable to get SteamID.");
+                    }
                     const steamUserSummary = (await steamApi.getUserSummary(userSteamID)) as UserSummary;
                     const user = await this.verify({ user: steamUserSummary, request });
                     return this.success(user, request, sessionStorage, options);
