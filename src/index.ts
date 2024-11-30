@@ -8,60 +8,62 @@ import { redirect } from "react-router";
 import { Strategy } from "remix-auth/strategy";
 import SteamAPI, { type UserSummary } from "steamapi";
 
-export interface SteamStrategyOptions {
-    apiKey: string;
-    onError?: (error: unknown) => void;
-    realm?: string;
-    returnURL: string;
+namespace SteamStrategy {
+    export interface Options {
+        apiKey: string;
+        onError?: (error: unknown) => void;
+        realm?: string;
+        returnURL: string;
+    }
+
+    export type VerifyOptions = {
+        request: Request;
+        user: UserSummary;
+    };
 }
 
-export type SteamStrategyVerifyParams = {
-    request: Request;
-    user: UserSummary;
-};
-
-function authenticateToSteam(relyingParty: OpenID.RelyingParty): Promise<string> {
-    return new Promise((resolve, reject) =>
-        relyingParty.authenticate("https://steamcommunity.com/openid", false, (err, url) => {
-            if (err) {
-                return reject(err);
-            }
-            if (!url) {
-                return reject("Got no URL from authenticate method");
-            }
-            return resolve(url);
-        })
-    );
-}
-
-function verifySteamAssertion(
-    relyingParty: OpenID.RelyingParty,
-    request: Request
-): Promise<{
-    authenticated: boolean;
-    claimedIdentifier?: string | undefined;
-}> {
-    return new Promise((resolve, reject) =>
-        relyingParty.verifyAssertion(request, (err, result) => {
-            if (err) {
-                return reject(err);
-            }
-            if (!result) {
-                return reject("No result from verifyAssertion");
-            }
-            return resolve(result);
-        })
-    );
-}
-
-export class SteamStrategy<User> extends Strategy<User, SteamStrategyVerifyParams> {
+export class SteamStrategy<User> extends Strategy<User, SteamStrategy.VerifyOptions> {
     name = "steam";
 
     constructor(
-        private options: SteamStrategyOptions | ((request: Request) => Promise<SteamStrategyOptions>),
-        verify: Strategy.VerifyFunction<User, SteamStrategyVerifyParams>
+        private options: SteamStrategy.Options | ((request: Request) => Promise<SteamStrategy.Options>),
+        verify: Strategy.VerifyFunction<User, SteamStrategy.VerifyOptions>
     ) {
         super(verify);
+    }
+
+    private authenticateToSteam(relyingParty: OpenID.RelyingParty): Promise<string> {
+        return new Promise((resolve, reject) =>
+            relyingParty.authenticate("https://steamcommunity.com/openid", false, (err, url) => {
+                if (err) {
+                    return reject(err);
+                }
+                if (!url) {
+                    return reject("Got no URL from authenticate method.");
+                }
+                return resolve(url);
+            })
+        );
+    }
+
+    private verifySteamAssertion(
+        relyingParty: OpenID.RelyingParty,
+        request: Request
+    ): Promise<{
+        authenticated: boolean;
+        claimedIdentifier?: string | undefined;
+    }> {
+        return new Promise((resolve, reject) =>
+            relyingParty.verifyAssertion(request, (err, result) => {
+                if (err) {
+                    return reject(err);
+                }
+                if (!result) {
+                    return reject("No result from verifyAssertion.");
+                }
+                return resolve(result);
+            })
+        );
     }
 
     async authenticate(request: Request): Promise<User> {
@@ -78,9 +80,9 @@ export class SteamStrategy<User> extends Strategy<User, SteamStrategyVerifyParam
             const url = new URL(request.url);
             const callbackUrl = new URL(returnURL);
             if (url.pathname === callbackUrl.pathname) {
-                const result = await verifySteamAssertion(relyingParty, request);
+                const result = await this.verifySteamAssertion(relyingParty, request);
                 if (!result.authenticated || !result.claimedIdentifier) {
-                    throw new Error("Not authenticated from result");
+                    throw new Error("Not authenticated from result.");
                 }
                 const userId = result.claimedIdentifier.toString().split("/").at(-1);
                 if (userId === undefined) {
@@ -91,7 +93,7 @@ export class SteamStrategy<User> extends Strategy<User, SteamStrategyVerifyParam
                     request
                 });
             } else {
-                throw redirect(await authenticateToSteam(relyingParty));
+                throw redirect(await this.authenticateToSteam(relyingParty));
             }
         } catch (error) {
             handleError(error);
