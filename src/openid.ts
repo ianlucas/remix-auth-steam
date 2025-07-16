@@ -147,7 +147,7 @@ export class SteamOpenID {
         }
 
         // Add other required fields not in the 'signed' list
-        const otherRequiredKeys = ["openid.mode", "openid.sig"];
+        const otherRequiredKeys = ["openid.mode", "openid.sig", "openid.ns"];
         for (const key of otherRequiredKeys) {
             const value = this.params.get(key);
             if (!value) {
