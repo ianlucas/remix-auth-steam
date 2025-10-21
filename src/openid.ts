@@ -77,6 +77,20 @@ export class SteamOpenID {
             throw new Error('Invalid "openid.return_to".');
         }
 
+        // Validate response_nonce format and timestamp
+        // RFC3339 YYYY-MM-DDTHH:MM:SSZ followed by unique characters
+        const nonceMatch = args["openid.response_nonce"]?.match(
+            /^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)/
+        );
+        if (!nonceMatch || !nonceMatch[1]) {
+            throw new Error('Invalid "openid.response_nonce" format.');
+        }
+
+        const nonceTime = new Date(nonceMatch[1]).getTime();
+        if (isNaN(nonceTime) || Math.abs(Date.now() - nonceTime) > 300_000) {
+            throw new Error("Nonce timestamp is too old or invalid.");
+        }
+
         // Extract SteamID from the identity URL
         const match = args["openid.identity"]?.match(SteamOpenID.STEAM_ID_REGEX);
         if (!match || !match[1]) {
