@@ -31,8 +31,15 @@ export class SteamOpenID {
      * @param request The incoming web request object.
      */
     constructor(returnUrl: string, request: Request) {
-        if (!returnUrl || !request) {
-            throw new Error("Both returnUrl and request objects are required.");
+        const parsed = new URL(returnUrl);
+        if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+            throw new Error("ReturnURL must start with https:// or http://");
+        }
+        if (!parsed.hostname) {
+            throw new Error("ReturnURL must contain a host.");
+        }
+        if (!parsed.pathname || parsed.pathname === "/") {
+            throw new Error("ReturnURL must contain a path to prevent prefix attacks.");
         }
         this.returnUrl = returnUrl;
         this.params = new URL(request.url).searchParams;
