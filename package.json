@@ -3,9 +3,6 @@
     "description": "Remix authentication strategy for Steam",
     "license": "MIT",
     "author": "Ian Lucas",
-    "repository": "ianlucas/remix-auth-steam",
-    "type": "module",
-    "main": "./dist/index.js",
     "keywords": [
         "auth",
         "authentication",
@@ -15,6 +12,18 @@
         "steam",
         "strategy"
     ],
+    "homepage": "https://github.com/ianlucas/remix-auth-steam#readme",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ianlucas/remix-auth-steam.git"
+    },
+    "bugs": {
+        "url": "https://github.com/ianlucas/remix-auth-steam/issues"
+    },
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "sideEffects": false,
     "scripts": {
         "docs": "typedoc --out docs src/index.ts",
         "prepack": "([ -d dist ] && rm -rf dist); tsc",
@@ -32,5 +41,8 @@
         "prettier": "^3.8.1",
         "typedoc": "^0.28.16",
         "typescript": "^5.9.3"
+    },
+    "engines": {
+        "node": ">=20"
     }
 }
