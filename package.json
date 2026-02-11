@@ -37,7 +37,7 @@
     },
     "devDependencies": {
         "@total-typescript/tsconfig": "^1.0.4",
-        "@types/node": "^22.19.10",
+        "@types/node": "^22.19.11",
         "prettier": "^3.8.1",
         "typedoc": "^0.28.16",
         "typescript": "^5.9.3"
