@@ -23,6 +23,9 @@
     "type": "module",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
     "sideEffects": false,
     "scripts": {
         "docs": "typedoc --out docs src/index.ts",
